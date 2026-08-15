@@ -1,0 +1,94 @@
+Online auction platform like eBay- Notes
+
+Functional Requirements:
+  User persona:
+        Buyer, Seller, Anonymous uses.
+   Listing for sale can be posted to end at any time in the future up to 30 days from now.
+   Should show the highest bid so far for the auction while it is still open
+   Can a buyer make multiple bids per product ? (but only 1 active bid at a time)
+   Anonymus user can see listing but can not participate in auction.
+Bids with same or lower price for the same auction are rejected.
+Product info can't be changed after it's published for sale (will need to be unpublished to edit)
+
+Out of scope:
+- search
+- sign-in-up process
+- payments
+
+Non Functional Requirements:
+100K daily active users
+10K auctions per day
+median 100 bids per auction
+max 10K bids per auction for all auction duration
+max 1K bids per second per auction
+1M registred buyers
+1K registered sellers
+accepting bids: less than 1s for p99
+live updates delivery: under 3s for p99
+strong consistency for accepting bids
+CAP: consistency is preferred
+strong consistency for placing bids seen by the bidder;
+eventual for other bidders seeing this bid
+1 country (e.g. USA), 1 currency
+
+Out of scope:
+- GDPR
+- disaster recovery
+
+   
+API:
+// Post or Listing of the product
+POST  host/auctions   
+{
+    sellerId, productTitle, initialPrice, description, exprationDateTime 
+}
+
+// Post bid on the auction
+POST host/autions{id}/bid  
+{
+    buyerId, bidPrice
+}
+
+Response 200 - if price is greater that current highest price
+    For existing Buyer - inactive old big and make new bid active
+    For new Buyer - accept the bid if it is higher than current highest bid
+Response 400 - if price is matching with any bid or lower than current highest price
+                    - if existing bid has buyerId return 400, bid already exist by you.
+
+// Unpublish auction
+POST host/autions{id}
+{
+    action = Unpublish
+}
+
+// Update auction details
+PUT host/auctions{id}
+{
+    productTitle, initialPrice, description, exprationDateTime 
+}
+
+// Publish auction - Bring it back to market
+POST host/autions{id}
+{
+    action = publish
+}
+
+GET host/auctions?status=active&titleContains=''"// Returnes all active the auction
+
+Get host/auctions/{id}/bids/highestBid
+
+// Show details of a specific auction
+Get host/auctions/{id} 
+Response body
+{
+    productTitle, initialPrice, description, exprationDateTime 
+}
+
+// Show all bids of the specific auction
+Get host/auctions/{id}/bids 
+
+Database design
+Auction
+    SellerId, producTitle 
+Bid, User
+=========STOP HERE=======
